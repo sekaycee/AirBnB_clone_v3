@@ -45,3 +45,19 @@ def post_state():
     storage.new(state)
     storage.save()
     return make_response(jsonify(state.to_dict()), 201)
+
+
+@app_views.route('/states/<state_id>', methods=['PUT'], strict_slashes=False)
+def put_state(state_id):
+    """ Update a State object """
+    r_state = request.get_json()
+    s_state = storage.get("State", state_id)
+    if not s_state:
+        abort(404)
+    if not r_state:
+        abort(400, "Not a JSON")
+    for k, v in r_state.items():
+        if k != 'id' and k != 'created_at' and k != 'updated_at':
+            setattr(s_state, k, v)
+    storage.save()
+    return make_response(jsonify(s_state.to_dict()), 200)
