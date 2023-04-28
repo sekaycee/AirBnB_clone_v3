@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 """ View for State objects that handles default API actions """
 from api.v1.views import app_views
-from flask import jsonify, abort, make_response
+from flask import jsonify, abort, make_response, request
 from models import storage
 from models.state import State
 
@@ -31,3 +31,17 @@ def del_state(state_id):
     state.delete()
     storage.save()
     return make_response(jsonify({}), 200)
+
+
+@app_views.route('/states', methods=['POST'], strict_slashes=False)
+def post_state():
+    """ Create a State object """
+    new_state = request.get_json()
+    if not new_state:
+        abort(400, "Not a JSON")
+    if "name" not in new_state:
+        abort(400, "Missing name")
+    state = State(**new_state)
+    storage.new(state)
+    storage.save()
+    return make_response(jsonify(state.to_dict()), 201)
